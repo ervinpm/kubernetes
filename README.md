@@ -82,6 +82,37 @@ $ kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Docum
 $ kubeadm join --token xxx --discover-token-ca-cert-hash xxx
 ```
 
+## MetalLB Installation
+This is a software based load balancer. Documentation can be found [here](https://metallb.universe.tf/installation/)
+
+1. Create the namespace
+
+```bash
+$ kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.9.5/manifests/namespace.yaml
+```
+
+2. Install Metal LB
+
+```bash
+$ kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.9.5/manifests/metallb.yaml
+```
+
+3. Create member list
+```bash
+$ kubectl create secret generic -n metallb-system memberlist --from-literal=secretkey="$(openssl rand -base64 128)"
+```
+
 ## NGINX Ingress controller
+1. Install NGINX ingress controller. The cloud version is applied here instead of baremetal because Metal LB is used.
+```bash
+$ kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/cloud/deploy.yaml
+```
+
+2. For some reason creating ingresses gets hung up because of a webhook. It's an open bug in the controller. Details are found [here](https://github.com/kubernetes/ingress-nginx/issues/5401#issuecomment-662424306). Below is the suggested workaround:
+```bash
+$ kubectl delete -A ValidatingWebhookConfiguration ingress-nginx-admission
+
+```
+
 Links:
 * https://docs.nginx.com/nginx-ingress-controller/installation/installation-with-manifests/
